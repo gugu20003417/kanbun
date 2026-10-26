@@ -1,43 +1,622 @@
-async function loadSheetData() {
-      let url = document.getElementById('sheetUrlInput').value.trim();
-      if (!url) {
-        alert("スプレッドシートのURLを入力してください。");
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漢文読み方マスター - フラッシュカード</title>
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --accent: #d9534f;
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --border: #e2e8f0;
+      --success: #28a745;
+      --error: #dc3545;
+      --target-color: #c53030;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Shippori Mincho', serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px 10px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      letter-spacing: 0.05em;
+    }
+
+    .config-panel {
+      width: 100%;
+      max-width: 600px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      font-family: sans-serif;
+      font-size: 0.9rem;
+    }
+
+    .config-panel details summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .config-input-group {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .config-input-group input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .btn-small {
+      padding: 8px 15px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .card-container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      border-radius: 12px;
+      padding: 25px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .status-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #666;
+      font-family: sans-serif;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    .status-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-action {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      background: #edf2f7;
+      border: 1px solid #cbd5e0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: sans-serif;
+      font-weight: bold;
+      color: #4a5568;
+    }
+
+    .btn-action:hover {
+      background: #e2e8f0;
+    }
+
+    /* 縦書き表示領域 */
+    .kanji-display-area {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      margin-bottom: 20px;
+      user-select: none;
+    }
+
+    .kanji-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* 各漢字ブロック */
+    .kanji-block {
+      position: relative;
+      font-size: 3.8rem;
+      font-weight: bold;
+      line-height: 1;
+      color: #555;
+    }
+
+    /* 出題対象（メイン漢字）の強調 */
+    .kanji-block.is-target {
+      color: var(--target-color);
+    }
+
+    /* 送り仮名（漢字の右横・上から2文字分下げ） */
+    .okurigana {
+      position: absolute;
+      top: 2em;
+      left: 100%;
+      font-size: 1.2rem;
+      font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+      font-weight: normal;
+      color: var(--primary);
+      line-height: 1;
+      padding-left: 2px;
+      white-space: nowrap;
+    }
+
+    /* 返点（漢字の左下） */
+    .kaeriten {
+      position: absolute;
+      bottom: -0.2em;
+      right: 100%;
+      font-size: 1.1rem;
+      font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+      font-weight: normal;
+      color: var(--primary);
+      line-height: 1;
+      padding-right: 2px;
+      white-space: nowrap;
+    }
+
+    /* 入力フォーム領域 */
+    .input-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 1.2rem;
+      width: 100%;
+    }
+
+    .answer-input {
+      width: 160px;
+      padding: 8px 12px;
+      font-size: 1.3rem;
+      text-align: center;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .answer-input:focus {
+      border-color: var(--primary);
+    }
+
+    .external-okurigana {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--primary);
+      font-family: 'Hiragino Sans', 'Meiryo', sans-serif;
+      min-width: 2em;
+    }
+
+    .result-message {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      font-family: sans-serif;
+      text-align: center;
+    }
+
+    .result-message.correct { color: var(--success); }
+    .result-message.incorrect { color: var(--error); }
+
+    .controls {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: sans-serif;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: #e2e8f0; color: #333; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: sans-serif;
+      font-weight: bold;
+      border-radius: 12px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>漢文読み方マスター</h1>
+  </header>
+
+  <section class="config-panel">
+    <details>
+      <summary>データソース設定 (Googleスプレッドシート)</summary>
+      <div class="config-input-group">
+        <input type="text" id="sheetUrlInput" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRmdzkFe1A5hAAhDdW-onGfZrduqFhTIGyRC69K3p5cRtHgNiFkCOE3Pk8-6kb9_MR1Yy_7US1pEWbi/pub?gid=0&single=true&output=csv">
+        <button class="btn-small" onclick="loadSheetData()">再読み込み</button>
+      </div>
+      <p style="font-size:0.75rem; color:#666; margin-top:8px; line-height:1.4;">
+        7列構成: id, kanji, okurigana, reading, before_text, after_text, kaeriten
+      </p>
+    </details>
+  </section>
+
+  <main class="card-container">
+    <div id="loading" class="loading-overlay" style="display: none;">データを読み込み中...</div>
+
+    <div class="status-bar">
+      <span>問題 <span id="currentIndex">1</span> / <span id="totalCount">0</span></span>
+      <div class="status-actions">
+        <span id="scoreDisplay">正解: 0</span>
+        <button class="btn-action" onclick="shuffleQuestions()">🔀 シャッフル</button>
+      </div>
+    </div>
+
+    <!-- 文脈付き漢字表示エリア -->
+    <div class="kanji-display-area">
+      <div id="kanjiColumn" class="kanji-column"></div>
+    </div>
+
+    <!-- 回答入力エリア -->
+    <div class="input-section">
+      <div class="input-wrapper">
+        <input type="text" id="answerInput" class="answer-input" placeholder="読みを入力" autocomplete="off">
+        <span id="externalOkurigana" class="external-okurigana"></span>
+      </div>
+
+      <div id="resultMessage" class="result-message"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()">前へ</button>
+      <button class="btn btn-primary" id="checkBtn" onclick="checkAnswer()">判定</button>
+      <button class="btn btn-secondary" id="nextBtn" onclick="nextQuestion()">次へ</button>
+    </div>
+  </main>
+
+  <script>
+    // 指定されたスプレッドシートURLをデフォルト設定
+    const DEFAULT_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRmdzkFe1A5hAAhDdW-onGfZrduqFhTIGyRC69K3p5cRtHgNiFkCOE3Pk8-6kb9_MR1Yy_7US1pEWbi/pub?gid=0&single=true&output=csv";
+
+    let rawQuestions = [];
+    let questions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let answeredStatus = {};
+
+    // 表記揺れ吸収用ノーマライズ関数
+    function normalizeText(str) {
+      if (!str) return "";
+      return str
+        .trim()
+        .replace(/[！-〜]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
+        .replace(/[\s\u3000]+/g, "")
+        .replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60))
+        .replace(/[\uff66-\uff9f]/g, ch => {
+          const kanaMap = {
+            'ｧ':'ぁ','ｨ':'ぃ','ｩ':'ぅ','ｪ':'ぇ','ｫ':'ぉ','ｬ':'ゃ','ｭ':'ゅ','ｮ':'ょ','ｯ':'っ',
+            'ｰ':'ー','ｱ':'あ','ｲ':'い','ｳ':'う','ｴ':'え','ｵ':'お','ｶ':'か','ｷ':'き','ｸ':'く',
+            'ｹ':'け','ｺ':'こ','ｻ':'さ','ｼ':'し','ｽ':'す','ｾ':'せ','ｿ':'そ','ﾀ':'た','ﾁ':'ち',
+            'ﾂ':'つ','ﾃ':'て','ﾄ':'と','ﾅ':'な','ﾆ':'に','ﾇ':'ぬ','ﾈ':'ね','ﾉ':'の','ﾊ':'は',
+            'ﾋ':'ひ','ﾌ':'ふ','ﾍ':'へ','ﾎ':'ほ','ﾏ':'ま','ﾐ':'み','ﾑ':'む','ﾒ':'め','ﾓ':'も',
+            'ﾔ':'や','ﾕ':'ゆ','ﾖ':'よ','ﾗ':'ら','ﾘ':'り','ﾙ':'る','ﾚ':'れ','ﾛ':'ろ','ﾜ':'わ',
+            'ｦ':'を','ﾝ':'ん'
+          };
+          return kanaMap[ch] || ch;
+        });
+    }
+
+    function parseKanjiItem(text) {
+      if (!text) return null;
+      const parts = text.split('/');
+      return {
+        kanji: parts[0] || "",
+        okurigana: parts[1] || "",
+        kaeriten: parts[2] || ""
+      };
+    }
+
+    function createKanjiBlockHtml(item, isTarget = false) {
+      if (!item || !item.kanji) return "";
+      const targetClass = isTarget ? "is-target" : "";
+      const okuriganaHtml = item.okurigana ? `<span class="okurigana">${item.okurigana}</span>` : "";
+      const kaeritenHtml = item.kaeriten ? `<span class="kaeriten">${item.kaeriten}</span>` : "";
+
+      return `
+        <div class="kanji-block ${targetClass}">
+          ${item.kanji}
+          ${okuriganaHtml}
+          ${kaeritenHtml}
+        </div>
+      `;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('answerInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkAnswer();
+      });
+      // 起動時に自動でスプレッドシートデータを読み込み
+      loadSheetData();
+    });
+
+    function renderQuestion() {
+      if (questions.length === 0) return;
+
+      const q = questions[currentIndex];
+      const column = document.getElementById('kanjiColumn');
+      column.innerHTML = "";
+
+      if (q.before_text) {
+        const beforeItem = parseKanjiItem(q.before_text);
+        column.innerHTML += createKanjiBlockHtml(beforeItem, false);
+      }
+
+      const mainItem = {
+        kanji: q.kanji,
+        okurigana: q.okurigana,
+        kaeriten: q.kaeriten
+      };
+      column.innerHTML += createKanjiBlockHtml(mainItem, true);
+
+      if (q.after_text) {
+        const afterItem = parseKanjiItem(q.after_text);
+        column.innerHTML += createKanjiBlockHtml(afterItem, false);
+      }
+
+      document.getElementById('externalOkurigana').textContent = q.okurigana || "";
+      document.getElementById('currentIndex').textContent = currentIndex + 1;
+      document.getElementById('totalCount').textContent = questions.length;
+
+      const input = document.getElementById('answerInput');
+      input.value = "";
+      input.focus();
+
+      const resultMsg = document.getElementById('resultMessage');
+      resultMsg.textContent = "";
+      resultMsg.className = "result-message";
+
+      document.getElementById('prevBtn').disabled = (currentIndex === 0);
+      document.getElementById('nextBtn').disabled = (currentIndex === questions.length - 1);
+
+      if (answeredStatus[currentIndex]) {
+        if (answeredStatus[currentIndex].isCorrect) {
+          resultMsg.textContent = "正解！";
+          resultMsg.classList.add('correct');
+        } else {
+          resultMsg.textContent = `不正解 (正解: ${q.reading}) 【末尾に復習問題を追加】`;
+          resultMsg.classList.add('incorrect');
+        }
+      }
+    }
+
+    function checkAnswer() {
+      const q = questions[currentIndex];
+      const userAns = document.getElementById('answerInput').value;
+      const normalizedUser = normalizeText(userAns);
+      const normalizedCorrect = normalizeText(q.reading);
+
+      const resultMsg = document.getElementById('resultMessage');
+
+      if (!normalizedUser) {
+        resultMsg.textContent = "入力してください";
+        resultMsg.className = "result-message";
         return;
       }
 
-      // スプレッドシートIDを抽出してCORS回避可能なgviz URLに自動変換
-      const idMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-      if (idMatch && idMatch[1]) {
-        const sheetId = idMatch[1];
-        url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+      const isCorrect = (normalizedUser === normalizedCorrect);
+
+      if (!answeredStatus[currentIndex]) {
+        if (isCorrect) {
+          score++;
+          document.getElementById('scoreDisplay').textContent = `正解: ${score}`;
+        } else {
+          // 不正解の場合は自動的に末尾に同じ問題を複製して追加
+          questions.push({ ...q });
+        }
       }
+
+      answeredStatus[currentIndex] = { isCorrect, userAns };
+
+      if (isCorrect) {
+        resultMsg.textContent = "正解！";
+        resultMsg.className = "result-message correct";
+      } else {
+        resultMsg.textContent = `不正解 (正解: ${q.reading}) 【末尾に復習問題を追加】`;
+        resultMsg.className = "result-message incorrect";
+      }
+
+      document.getElementById('totalCount').textContent = questions.length;
+      document.getElementById('nextBtn').disabled = (currentIndex === questions.length - 1);
+    }
+
+    function shuffleQuestions() {
+      if (questions.length === 0) return;
+      
+      let array = [...rawQuestions];
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      
+      questions = array;
+      currentIndex = 0;
+      score = 0;
+      answeredStatus = {};
+      document.getElementById('scoreDisplay').textContent = "正解: 0";
+      renderQuestion();
+    }
+
+    function prevQuestion() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      }
+    }
+
+    // CORS制限回避対応のデータ取得関数
+    async function loadSheetData() {
+      let targetUrl = document.getElementById('sheetUrlInput').value.trim() || DEFAULT_CSV_URL;
 
       const loading = document.getElementById('loading');
       loading.style.display = 'flex';
 
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error("データの取得に失敗しました。");
-        const csvText = await response.text();
+      let csvText = "";
 
-        const parsedData = parseCSV(csvText);
-        if (parsedData.length === 0) {
-          alert("有効な問題データが見つかりませんでした。");
+      try {
+        // 直接取得を試行
+        let response = await fetch(targetUrl);
+        if (!response.ok) throw new Error();
+        csvText = await response.text();
+      } catch (e) {
+        try {
+          // ローカル環境やCORSで遮断される場合、フォールバックプロキシ経由で取得
+          const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(targetUrl);
+          let response = await fetch(proxyUrl);
+          if (!response.ok) throw new Error();
+          csvText = await response.text();
+        } catch (err) {
+          alert("データの取得に失敗しました。スプレッドシートのWeb公開設定を確認してください。");
+          console.error(err);
+          loading.style.display = 'none';
           return;
         }
-
-        rawQuestions = [...parsedData];
-        questions = [...parsedData];
-        currentIndex = 0;
-        score = 0;
-        answeredStatus = {};
-        document.getElementById('scoreDisplay').textContent = "正解: 0";
-        renderQuestion();
-        alert(`${questions.length} 件のデータを取り込みました。`);
-      } catch (err) {
-        alert("読み込みエラーが発生しました。スプレッドシートの共有設定が「リンクを知っている全員」になっているか確認してください。");
-        console.error(err);
-      } finally {
-        loading.style.display = 'none';
       }
+
+      const parsedData = parseCSV(csvText);
+      if (parsedData.length === 0) {
+        alert("有効な問題データが見つかりませんでした。");
+        loading.style.display = 'none';
+        return;
+      }
+
+      rawQuestions = [...parsedData];
+      questions = [...parsedData];
+      currentIndex = 0;
+      score = 0;
+      answeredStatus = {};
+      document.getElementById('scoreDisplay').textContent = "正解: 0";
+      renderQuestion();
+
+      loading.style.display = 'none';
     }
+
+    // ダブルクォーテーション対応CSVパース関数
+    function parseCSV(text) {
+      const lines = text.split(/\r\n|\n|\r/);
+      const result = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        // クォートやカンマの厳密パース
+        const regex = /(?:^|,)(?:"([^"]*)"|([^,]*))/g;
+        const cols = [];
+        let match;
+        while ((match = regex.exec(line)) !== null) {
+          if (match[0] === '' && match.index === regex.lastIndex) {
+            regex.lastIndex++;
+          }
+          cols.push(match[1] !== undefined ? match[1] : match[2]);
+        }
+
+        // ヘッダー行をスキップ
+        if (i === 0 && (cols[0].toLowerCase() === 'id' || cols[1] === 'kanji')) {
+          continue;
+        }
+
+        if (cols.length >= 4) {
+          result.push({
+            id: cols[0] || "",
+            kanji: cols[1] || "",
+            okurigana: cols[2] || "",
+            reading: cols[3] || "",
+            before_text: cols[4] || "",
+            after_text: cols[5] || "",
+            kaeriten: cols[6] || ""
+          });
+        }
+      }
+      return result;
+    }
+  </script>
+</body>
+</html>
