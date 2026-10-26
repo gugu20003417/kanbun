@@ -1,371 +1,91 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>漢文読み方マスター - フラッシュカード</title>
+  <title>漢文読み方マスター - 動作確認</title>
   <style>
-    :root {
-      --primary: #2c3e50;
-      --accent: #d9534f;
-      --bg: #f8f9fa;
-      --card-bg: #ffffff;
-      --text: #333333;
-      --border: #e2e8f0;
-      --success: #28a745;
-      --error: #dc3545;
-      --target-color: #c53030;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Shippori Mincho', serif;
-      background-color: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px 10px;
-    }
-
-    header { width: 100%; max-width: 600px; text-align: center; margin-bottom: 20px; }
-    h1 { font-size: 1.5rem; color: var(--primary); letter-spacing: 0.05em; }
-
-    .config-panel {
-      width: 100%; max-width: 600px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px; padding: 15px; margin-bottom: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      font-family: sans-serif; font-size: 0.9rem;
-    }
-
-    .config-input-group { margin-top: 10px; display: flex; gap: 10px; }
-    .config-input-group input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.85rem; }
-
-    .btn-small { padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-
-    .card-container {
-      width: 100%; max-width: 480px;
-      background: var(--card-bg);
-      border: 2px solid var(--primary);
-      border-radius: 12px; padding: 25px 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      display: flex; flex-direction: column; align-items: center;
-      position: relative;
-    }
-
-    .status-bar {
-      width: 100%; display: flex; justify-content: space-between; align-items: center;
-      color: #666; font-family: sans-serif; font-size: 0.85rem; margin-bottom: 15px;
-      border-bottom: 1px solid var(--border); padding-bottom: 8px;
-    }
-
-    .btn-action { padding: 4px 10px; font-size: 0.75rem; background: #edf2f7; border: 1px solid #cbd5e0; border-radius: 4px; cursor: pointer; font-weight: bold; color: #4a5568; }
-
-    .kanji-display-area {
-      min-height: 220px; display: flex; align-items: center; justify-content: center;
-      writing-mode: vertical-rl; text-orientation: upright; margin-bottom: 20px; user-select: none;
-    }
-
-    .kanji-column { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .kanji-block { position: relative; font-size: 3.8rem; font-weight: bold; line-height: 1; color: #555; }
-    .kanji-block.is-target { color: var(--target-color); }
-
-    .okurigana {
-      position: absolute; top: 2em; left: 100%; font-size: 1.2rem;
-      font-family: 'Hiragino Sans', 'Meiryo', sans-serif; font-weight: normal; color: var(--primary); line-height: 1; padding-left: 2px; white-space: nowrap;
-    }
-
-    .kaeriten {
-      position: absolute; bottom: -0.2em; right: 100%; font-size: 1.1rem;
-      font-family: 'Hiragino Sans', 'Meiryo', sans-serif; font-weight: normal; color: var(--primary); line-height: 1; padding-right: 2px; white-space: nowrap;
-    }
-
-    .input-section { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .input-wrapper { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 1.2rem; width: 100%; }
-
-    .answer-input {
-      width: 160px; padding: 8px 12px; font-size: 1.3rem; text-align: center;
-      border: 2px solid var(--border); border-radius: 6px; font-family: 'Hiragino Sans', 'Meiryo', sans-serif; outline: none;
-    }
-
-    .external-okurigana { font-size: 1.3rem; font-weight: bold; color: var(--primary); font-family: 'Hiragino Sans', 'Meiryo', sans-serif; min-width: 2em; }
-    .result-message { height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; font-family: sans-serif; }
-    .result-message.correct { color: var(--success); }
-    .result-message.incorrect { color: var(--error); }
-
-    .controls { width: 100%; display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; }
-    .btn { flex: 1; padding: 12px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; font-family: sans-serif; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-secondary { background: #e2e8f0; color: #333; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ログ表示エリア */
-    .debug-log {
-      width: 100%; max-width: 600px; margin-top: 20px; padding: 10px; background: #222; color: #0f0;
-      font-family: monospace; font-size: 0.8rem; border-radius: 6px; height: 120px; overflow-y: auto;
-    }
+    body { font-family: sans-serif; padding: 20px; background: #f0f4f8; }
+    .card { background: white; padding: 20px; border-radius: 8px; max-width: 500px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .kanji-box { font-size: 3rem; text-align: center; margin: 20px 0; color: #2c3e50; }
+    .status { background: #111; color: #0f0; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; height: 150px; overflow-y: auto; margin-top: 20px; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>漢文読み方マスター</h1>
-  </header>
-
-  <section class="config-panel">
-    <details open>
-      <summary>データソース設定 (Googleスプレッドシート)</summary>
-      <div class="config-input-group">
-        <input type="text" id="sheetUrlInput" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vRmdzkFe1A5hAAhDdW-onGfZrduqFhTIGyRC69K3p5cRtHgNiFkCOE3Pk8-6kb9_MR1Yy_7US1pEWbi/pub?gid=0&single=true&output=csv">
-        <button class="btn-small" onclick="loadSheetData()">読み込み</button>
-      </div>
-    </details>
-  </section>
-
-  <main class="card-container">
-    <div class="status-bar">
-      <span>問題 <span id="currentIndex">0</span> / <span id="totalCount">0</span></span>
-      <div class="status-actions">
-        <span id="scoreDisplay">正解: 0</span>
-        <button class="btn-action" onclick="shuffleQuestions()">🔀 シャッフル</button>
-      </div>
+  <div class="card">
+    <h2>漢文読み方マスター (動作テスト)</h2>
+    <div id="kanjiArea" class="kanji-box">読み込み中...</div>
+    <div>
+      <input type="text" id="answerInput" placeholder="読みを入力">
+      <button onclick="check()">判定</button>
     </div>
-
-    <div class="kanji-display-area">
-      <div id="kanjiColumn" class="kanji-column"></div>
-    </div>
-
-    <div class="input-section">
-      <div class="input-wrapper">
-        <input type="text" id="answerInput" class="answer-input" placeholder="読みを入力" autocomplete="off">
-        <span id="externalOkurigana" class="external-okurigana"></span>
-      </div>
-      <div id="resultMessage" class="result-message"></div>
-    </div>
-
-    <div class="controls">
-      <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>前へ</button>
-      <button class="btn btn-primary" id="checkBtn" onclick="checkAnswer()">判定</button>
-      <button class="btn btn-secondary" id="nextBtn" onclick="nextQuestion()" disabled>次へ</button>
-    </div>
-  </main>
-
-  <div class="debug-log" id="debugLog">--- ログ出力エリア ---<br></div>
+    <div id="result" style="margin-top:10px; font-weight:bold;"></div>
+    
+    <div class="status" id="logBox">=== 診断ログ ===<br></div>
+  </div>
 
   <script>
-    let rawQuestions = [];
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRmdzkFe1A5hAAhDdW-onGfZrduqFhTIGyRC69K3p5cRtHgNiFkCOE3Pk8-6kb9_MR1Yy_7US1pEWbi/pub?gid=0&single=true&output=csv";
     let questions = [];
-    let currentIndex = 0;
-    let score = 0;
-    let answeredStatus = {};
 
-    function log(msg, isError = false) {
-      const logDiv = document.getElementById('debugLog');
-      const color = isError ? '#ff6b6b' : '#51cf66';
-      logDiv.innerHTML += `<span style="color:${color}">${msg}</span><br>`;
-      logDiv.scrollTop = logDiv.scrollHeight;
+    function printLog(msg, isError = false) {
+      const logBox = document.getElementById('logBox');
+      const color = isError ? '#ff6b6b' : '#0f0';
+      logBox.innerHTML += `<span style="color:${color}">${msg}</span><br>`;
+      console.log(msg);
     }
 
-    function normalizeText(str) {
-      if (!str) return "";
-      return str.trim()
-        .replace(/[！-〜]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0))
-        .replace(/[\s\u3000]+/g, "")
-        .replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
-    }
+    window.onload = async function() {
+      printLog("ページが正常に起動しました。");
+      printLog("スプレッドシートデータ取得中...");
 
-    function parseKanjiItem(text) {
-      if (!text) return null;
-      const parts = text.split('/');
-      return { kanji: parts[0] || "", okurigana: parts[1] || "", kaeriten: parts[2] || "" };
-    }
-
-    function createKanjiBlockHtml(item, isTarget = false) {
-      if (!item || !item.kanji) return "";
-      const targetClass = isTarget ? "is-target" : "";
-      const okuriganaHtml = item.okurigana ? `<span class="okurigana">${item.okurigana}</span>` : "";
-      const kaeritenHtml = item.kaeriten ? `<span class="kaeriten">${item.kaeriten}</span>` : "";
-
-      return `<div class="kanji-block ${targetClass}">${item.kanji}${okuriganaHtml}${kaeritenHtml}</div>`;
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('answerInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') checkAnswer();
-      });
-      loadSheetData();
-    });
-
-    function renderQuestion() {
-      if (questions.length === 0) return;
-
-      const q = questions[currentIndex];
-      const column = document.getElementById('kanjiColumn');
-      column.innerHTML = "";
-
-      if (q.before_text) {
-        column.innerHTML += createKanjiBlockHtml(parseKanjiItem(q.before_text), false);
-      }
-
-      column.innerHTML += createKanjiBlockHtml({
-        kanji: q.kanji, okurigana: q.okurigana, kaeriten: q.kaeriten
-      }, true);
-
-      if (q.after_text) {
-        column.innerHTML += createKanjiBlockHtml(parseKanjiItem(q.after_text), false);
-      }
-
-      document.getElementById('externalOkurigana').textContent = q.okurigana || "";
-      document.getElementById('currentIndex').textContent = currentIndex + 1;
-      document.getElementById('totalCount').textContent = questions.length;
-
-      const input = document.getElementById('answerInput');
-      input.value = ""; input.focus();
-
-      const resultMsg = document.getElementById('resultMessage');
-      resultMsg.textContent = ""; resultMsg.className = "result-message";
-
-      document.getElementById('prevBtn').disabled = (currentIndex === 0);
-      document.getElementById('nextBtn').disabled = (currentIndex === questions.length - 1);
-    }
-
-    function checkAnswer() {
-      if (questions.length === 0) return;
-      const q = questions[currentIndex];
-      const userAns = document.getElementById('answerInput').value;
-      const normalizedUser = normalizeText(userAns);
-      const normalizedCorrect = normalizeText(q.reading);
-      const resultMsg = document.getElementById('resultMessage');
-
-      if (!normalizedUser) {
-        resultMsg.textContent = "入力してください"; return;
-      }
-
-      const isCorrect = (normalizedUser === normalizedCorrect);
-
-      if (!answeredStatus[currentIndex]) {
-        if (isCorrect) {
-          score++;
-          document.getElementById('scoreDisplay').textContent = `正解: ${score}`;
-        } else {
-          questions.push({ ...q });
-        }
-      }
-
-      answeredStatus[currentIndex] = { isCorrect, userAns };
-
-      if (isCorrect) {
-        resultMsg.textContent = "正解！";
-        resultMsg.className = "result-message correct";
-      } else {
-        resultMsg.textContent = `不正解 (正解: ${q.reading})`;
-        resultMsg.className = "result-message incorrect";
-      }
-
-      document.getElementById('totalCount').textContent = questions.length;
-      document.getElementById('nextBtn').disabled = (currentIndex === questions.length - 1);
-    }
-
-    function shuffleQuestions() {
-      if (rawQuestions.length === 0) return;
-      let array = [...rawQuestions];
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      questions = array;
-      currentIndex = 0; score = 0; answeredStatus = {};
-      document.getElementById('scoreDisplay').textContent = "正解: 0";
-      renderQuestion();
-    }
-
-    function prevQuestion() { if (currentIndex > 0) { currentIndex--; renderQuestion(); } }
-    function nextQuestion() { if (currentIndex < questions.length - 1) { currentIndex++; renderQuestion(); } }
-
-    async function loadSheetData() {
-      const url = document.getElementById('sheetUrlInput').value.trim();
-      log("データ取得を開始します...");
-
-      let csvText = "";
-
-      // 取得パターン1: 直fetch
       try {
-        log("直接fetchを試行中...");
-        let res = await fetch(url);
-        if (res.ok) {
-          csvText = await res.text();
-          log("直接取得に成功しました！");
-        }
-      } catch (e) {
-        log("直接fetchに失敗（CORSまたはlocal file制限）。プロキシ経由に切り替えます...", true);
-      }
+        // プロキシ経由でデータ取得
+        const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(SHEET_URL);
+        const res = await fetch(proxyUrl);
+        if (!res.ok) throw new Error("HTTPエラー: " + res.status);
+        
+        const csvText = await res.text();
+        printLog("CSVデータ取得完了 (" + csvText.length + " 文字)");
 
-      // 取得パターン2: プロキシ経由
-      if (!csvText) {
-        try {
-          const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
-          log("プロキシ経由で取得中...");
-          let res = await fetch(proxyUrl);
-          if (res.ok) {
-            csvText = await res.text();
-            log("プロキシ経由での取得に成功しました！");
+        // 簡易パース
+        const lines = csvText.split('\n').map(l => l.trim()).filter(l => l);
+        for (let i = 1; i < lines.length; i++) {
+          const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, ''));
+          if (cols.length >= 4) {
+            questions.push({
+              kanji: cols[1],
+              okurigana: cols[2],
+              reading: cols[3]
+            });
           }
-        } catch (e) {
-          log("すべての取得処理に失敗しました。インターネット接続またはURLを確認してください。", true);
-          return;
-        }
-      }
-
-      parseAndApplyCSV(csvText);
-    }
-
-    function parseAndApplyCSV(text) {
-      log("CSVデータのパースを開始します...");
-      const lines = text.split(/\r\n|\n|\r/).map(l => l.trim()).filter(l => l.length > 0);
-      log(`全 ${lines.length} 行のテキストを取得`);
-
-      const parsed = [];
-      for (let i = 0; i < lines.length; i++) {
-        // カンマ区切り（簡易パース）
-        const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
-
-        // ヘッダー行判定（1行目が 'id' や 'kanji' の場合はスキップ）
-        if (i === 0 && (cols[0].toLowerCase().includes('id') || cols[1] === 'kanji')) {
-          log("ヘッダー行をスキップしました");
-          continue;
         }
 
-        if (cols.length >= 4) {
-          parsed.push({
-            id: cols[0] || "",
-            kanji: cols[1] || "",
-            okurigana: cols[2] || "",
-            reading: cols[3] || "",
-            before_text: cols[4] || "",
-            after_text: cols[5] || "",
-            kaeriten: cols[6] || ""
-          });
+        printLog("問題データ登録完了: " + questions.length + "問");
+
+        if (questions.length > 0) {
+          document.getElementById('kanjiArea').textContent = questions[0].kanji + (questions[0].okurigana || "");
+        } else {
+          printLog("エラー: データが0件です", true);
         }
+
+      } catch (err) {
+        printLog("エラー発生: " + err.message, true);
       }
+    };
 
-      log(`パース完了: ${parsed.length} 件の問題を取り込みました`);
-
-      if (parsed.length === 0) {
-        log("【エラー】問題データが0件です。スプレッドシートの列順（A:id, B:kanji, C:okurigana, D:reading）を確認してください。", true);
-        return;
+    function check() {
+      if (questions.length === 0) return;
+      const user = document.getElementById('answerInput').value.trim();
+      const correct = questions[0].reading;
+      const resultDiv = document.getElementById('result');
+      if (user === correct) {
+        resultDiv.textContent = "正解！";
+        resultDiv.style.color = "green";
+      } else {
+        resultDiv.textContent = "不正解 (正解: " + correct + ")";
+        resultDiv.style.color = "red";
       }
-
-      rawQuestions = [...parsed];
-      questions = [...parsed];
-      currentIndex = 0;
-      score = 0;
-      answeredStatus = {};
-      renderQuestion();
     }
   </script>
 </body>
